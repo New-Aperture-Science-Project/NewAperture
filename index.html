@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>New Aperture Science Project (NASP)</title>
+<style>
+  :root{
+    --bg:#0a0e12; --panel:#11171d; --line:#1f2a33;
+    --accent:#f5a623; --accent2:#00e0ff; --text:#c8d2da;
+    --dim:#5f6d78; --danger:#ff4b4b; --ok:#3ddc84;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.6;overflow-x:hidden}
+  body::before{content:"";position:fixed;inset:0;background-image:linear-gradient(rgba(0,224,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,224,255,.04) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0}
+  .wrap{max-width:1100px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
+  header{position:sticky;top:0;z-index:50;background:rgba(10,14,18,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:64px}
+  .logo{display:flex;align-items:center;gap:12px;font-weight:700;letter-spacing:1px;cursor:pointer}
+  .logo .ring{width:34px;height:34px;border-radius:50%;border:3px solid var(--accent);position:relative;flex-shrink:0;animation:spin 12s linear infinite}
+  .logo .ring::after{content:"";position:absolute;inset:6px;border-radius:50%;border:2px solid var(--accent2)}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .logo b{color:var(--accent)}
+  nav ul{display:flex;gap:24px;list-style:none}
+  nav a{color:var(--text);text-decoration:none;font-size:14px;letter-spacing:.5px;transition:.2s;cursor:pointer}
+  nav a:hover{color:var(--accent2)}
+  .burger{display:none;background:none;border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px 12px;cursor:pointer;font-size:18px}
+  @media(max-width:860px){
+    nav ul{display:none;position:absolute;top:64px;left:0;right:0;flex-direction:column;gap:0;background:var(--panel);border-bottom:1px solid var(--line);padding:10px 0}
+    nav ul.open{display:flex}
+    nav ul li a{display:block;padding:12px 24px}
+    .burger{display:block}
+  }
+  .page{display:none}
+  .page.active{display:block;animation:fade .35s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .hero{padding:110px 0 90px;text-align:center}
+  .badge{display:inline-block;font-size:12px;letter-spacing:2px;border:1px solid var(--accent);color:var(--accent);padding:6px 14px;border-radius:100px;margin-bottom:26px;text-transform:uppercase}
+  .hero h1{font-size:clamp(34px,6vw,68px);line-height:1.05;font-weight:800;letter-spacing:-1px;margin-bottom:22px}
+  .hero h1 span{background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{max-width:640px;margin:0 auto 36px;color:var(--dim);font-size:18px}
+  .btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+  .btn{padding:14px 32px;border-radius:8px;font-size:15px;font-weight:600;letter-spacing:.5px;cursor:pointer;text-decoration:none;transition:.25s;border:1px solid transparent;display:inline-block}
+  .btn-primary{background:var(--accent);color:#0a0e12}
+  .btn-primary:hover{background:#ffbe4d;transform:translateY(-2px)}
+  .btn-ghost{border-color:var(--line);color:var(--text)}
+  .btn-ghost:hover{border-color:var(--accent2);color:var(--accent2)}
+  .btn-danger{background:rgba(255,75,75,.12);border:1px solid var(--danger);color:var(--danger)}
+  .btn-sm{padding:8px 14px;font-size:13px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:70px 0}
+  .stat{background:var(--panel);padding:32px 24px;text-align:center}
+  .stat .num{font-size:38px;font-weight:800;color:var(--accent2);letter-spacing:-1px}
+  .stat .num.zero{color:var(--accent)}
+  .stat .lbl{font-size:12px;letter-spacing:1.5px;color:var(--dim);text-transform:uppercase;margin-top:6px}
+  section{padding:80px 0;position:relative;z-index:1}
+  .sec-head{margin-bottom:48px}
+  .sec-head .kicker{font-size:12px;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:10px}
+  .sec-head h2{font-size:clamp(26px,4vw,42px);font-weight:800;letter-spacing:-.5px}
+  .sec-head p{color:var(--dim);max-width:600px;margin-top:12px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:30px;transition:.25s;position:relative;overflow:hidden}
+  .card:hover{border-color:#2c3b47;transform:translateY(-4px)}
+  .card .ico{font-size:26px;margin-bottom:16px;display:block;color:var(--accent2)}
+  .card h3{font-size:19px;margin-bottom:10px;color:#fff}
+  .card p{font-size:14.5px;color:var(--dim)}
+  .proj{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px}
+  .proj .card{padding:0}
+  .proj .top{padding:24px 26px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  .proj .code{font-family:monospace;color:var(--accent2);font-size:13px}
+  .status{font-size:11px;letter-spacing:1px;padding:4px 10px;border-radius:100px;text-transform:uppercase}
+  .st-active{background:rgba(0,224,255,.12);color:var(--accent2)}
+  .st-test{background:rgba(245,166,35,.12);color:var(--accent)}
+  .st-class{background:rgba(255,75,75,.12);color:var(--danger)}
+  .st-pend{background:rgba(95,109,120,.18);color:var(--dim)}
+  .st-work{background:rgba(61,220,132,.12);color:var(--ok)}
+  .proj .body{padding:24px 26px}
+  .proj .body h3{font-size:20px;margin-bottom:10px;color:#fff}
+  .proj .body p{font-size:14.5px;color:var(--dim);margin-bottom:16px}
+  .bar{height:5px;background:#0a0e12;border-radius:100px;overflow:hidden}
+  .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:100px}
+  .warning{border:1px solid var(--danger);border-radius:12px;background:rgba(255,75,75,.06);padding:26px 30px;display:flex;gap:18px;align-items:flex-start;margin-top:60px}
+  .warning .sym{font-size:30px;color:var(--danger);line-height:1}
+  .warning h4{color:var(--danger);letter-spacing:1px;font-size:14px;text-transform:uppercase;margin-bottom:8px}
+  .warning p{font-size:14px}
+  .cta{text-align:center;background:linear-gradient(180deg,var(--panel),transparent);border:1px solid var(--line);border-radius:18px;padding:60px 30px}
+  .cta h2{font-size:clamp(24px,4vw,38px);font-weight:800;margin-bottom:16px}
+  .cta p{color:var(--dim);max-width:520px;margin:0 auto 30px}
+  .proto-hero{padding:70px 0 20px}
+  .proto-hero h1{font-size:clamp(30px,5vw,52px);font-weight:800;letter-spacing:-1px;margin-bottom:14px}
+  .proto-hero h1 span{color:var(--accent2)}
+  .proto-hero p{color:var(--dim);max-width:680px}
+  .proto-meta{display:flex;gap:14px;flex-wrap:wrap;margin:30px 0 20px;align-items:center}
+  .proto-meta .tag{font-size:12px;letter-spacing:1px;text-transform:uppercase;border:1px solid var(--line);padding:6px 12px;border-radius:100px;color:var(--dim)}
+  .proto-meta .tag b{color:var(--accent2)}
+  .controls{display:grid;grid-template-columns:1fr auto;gap:12px;margin-bottom:26px}
+  @media(max-width:620px){.controls{grid-template-columns:1fr}}
+  .search{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:13px 16px;color:var(--text);font-size:15px;width:100%;outline:none}
+  .search:focus{border-color:var(--accent2)}
+  .filters{display:flex;gap:8px;flex-wrap:wrap}
+  .fbtn{background:var(--panel);border:1px solid var(--line);color:var(--dim);padding:10px 16px;border-radius:8px;cursor:pointer;font-size:13px;transition:.2s;white-space:nowrap}
+  .fbtn:hover{color:var(--text)}
+  .fbtn.active{background:rgba(0,224,255,.1);border-color:var(--accent2);color:var(--accent2)}
+  .proto-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:40px}
+  .proto{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 22px;transition:.22s;display:flex;flex-direction:column;gap:10px}
+  .proto:hover{border-color:#2c3b47;transform:translateY(-3px)}
+  .proto .row1{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .proto .pid{font-family:monospace;font-size:12px;color:var(--accent2)}
+  .proto h4{font-size:16.5px;color:#fff;font-weight:600;line-height:1.3}
+  .proto p{font-size:13.5px;color:var(--dim);flex:1}
+  .proto .foot{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--dim);border-top:1px solid var(--line);padding-top:10px;letter-spacing:.5px;text-transform:uppercase}
+  .proto .foot .lvl{color:var(--accent)}
+  .empty{text-align:center;padding:60px 20px;color:var(--dim);border:1px dashed var(--line);border-radius:12px;grid-column:1/-1}
+  .count{font-size:13px;color:var(--dim);margin-bottom:16px}
+  .count b{color:var(--accent2)}
+  .login-box{max-width:420px;margin:90px auto;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:40px 34px}
+  .login-box h2{font-size:24px;margin-bottom:8px;color:#fff}
+  .login-box p{color:var(--dim);font-size:14px;margin-bottom:24px}
+  .login-box input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:13px 16px;color:var(--text);font-size:15px;outline:none;margin-bottom:14px}
+  .login-box input:focus{border-color:var(--accent2)}
+  .login-err{color:var(--danger);font-size:13px;margin-bottom:12px;display:none}
+  .admin-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:40px 0 10px}
+  .admin-head h1{font-size:clamp(24px,4vw,36px);font-weight:800}
+  .admin-head h1 span{color:var(--accent2)}
+  .admin-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 30px}
+  .atab{background:var(--panel);border:1px solid var(--line);color:var(--dim);padding:11px 20px;border-radius:8px;cursor:pointer;font-size:14px}
+  .atab.active{background:rgba(0,224,255,.1);border-color:var(--accent2);color:var(--accent2)}
+  .a-section{display:none}
+  .a-section.active{display:block;animation:fade .3s ease}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px;margin-bottom:26px}
+  .panel h3{font-size:18px;color:#fff;margin-bottom:18px}
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:14px}
+  .field label{display:block;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+  .field input,.field select,.field textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:11px 13px;color:var(--text);font-size:14px;outline:none;font-family:inherit}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent2)}
+  .field textarea{resize:vertical;min-height:64px}
+  .form-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+  .a-table{width:100%;border-collapse:collapse;font-size:14px}
+  .a-table th{text-align:left;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--dim);padding:10px 12px;border-bottom:1px solid var(--line)}
+  .a-table td{padding:12px;border-bottom:1px solid var(--line);vertical-align:top}
+  .a-table .acts{display:flex;gap:6px;flex-wrap:wrap}
+  .a-table .name{color:#fff;font-weight:600}
+  .a-table .code{font-family:monospace;color:var(--accent2);font-size:12px}
+  .a-table select{background:var(--bg);border:1px solid var(--line);color:var(--text);border-radius:7px;padding:6px 8px;font-size:13px}
+  .table-scroll{overflow-x:auto}
+  .mini-btn{background:var(--panel);border:1px solid var(--line);color:var(--text);padding:6px 11px;border-radius:7px;cursor:pointer;font-size:12px;white-space:nowrap}
+  .mini-btn:hover{border-color:var(--accent2);color:var(--accent2)}
+  .mini-btn.del:hover{border-color:var(--danger);color:var(--danger)}
+  .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--panel);border:1px solid var(--accent2);color:var(--text);padding:13px 22px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:.3s;z-index:999;max-width:90vw}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast.err{border-color:var(--danger);color:var(--danger)}
+  .diag-box{background:#0a0e12;border:1px solid var(--line);border-radius:10px;padding:16px;font-family:monospace;font-size:12px;white-space:pre-wrap;color:var(--text);margin-top:14px;display:none;max-height:300px;overflow:auto}
+  footer{border-top:1px solid var(--line);padding:40px 0;margin-top:40px}
+  .foot{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;font-size:13px;color:var(--dim)}
+  .foot .logo{font-size:14px}
+  .foot .logo .ring{width:24px;height:24px;border-width:2px}
+  .foot .logo .ring::after{inset:4px}
+  .loading{text-align:center;padding:60px;color:var(--dim);font-size:14px;letter-spacing:1px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="logo" onclick="showPage('home')"><div class="ring"></div><span>N<b>A</b>SP</span></div>
+    <button class="burger" onclick="document.getElementById('menu').classList.toggle('open')">☰</button>
+    <nav>
+      <ul id="menu">
+        <li><a onclick="go('home','about')">О проекте</a></li>
+        <li><a onclick="go('home','projects')">Проекты</a></li>
+        <li><a onclick="showPage('protocols')">Протоколы</a></li>
+        <li><a onclick="go('home','contact')">Контакты</a></li>
+        <li><a onclick="showPage('admin')">Админ</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<div id="page-home" class="page active">
+  <div class="wrap">
+    <div class="hero">
+      <div class="badge">Aperture Science Initiative</div>
+      <h1>New Aperture<br><span>Science Project</span></h1>
+      <p>Мы расширяем границы науки, инженерии и человеческого любопытства.
+         NASP — это новая эра экспериментов, где невозможное становится протоколом.</p>
+      <div class="btns">
+        <a class="btn btn-primary" onclick="showPage('protocols')">Все протоколы</a>
+        <a class="btn btn-ghost" onclick="go('home','about')">Узнать больше</a>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="num" id="stProto">—</div><div class="lbl">Протокола</div></div>
+      <div class="stat"><div class="num" id="stWork">—</div><div class="lbl">В работе</div></div>
+      <div class="stat"><div class="num zero" id="stTests">—</div><div class="lbl">Проведено тестов</div></div>
+      <div class="stat"><div class="num" id="stOk">—</div><div class="lbl">Успешных тестов</div></div>
+    </div>
+  </div>
+
+  <section id="about">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="kicker">// 01 — Миссия</div>
+        <h2>Наука без границ</h2>
+        <p>NASP — преемник легендарных традиций Aperture Science. Мы совмещаем
+           передовую физику, робототехнику и когнитивные исследования в единую экосистему.</p>
+      </div>
+      <div class="grid">
+        <div class="card"><span class="ico">⚛️</span><h3>Квантовая физика</h3><p>Изучаем поведение материи на предельных масштабах и ищем практическое применение квантовых эффектов.</p></div>
+        <div class="card"><span class="ico">🤖</span><h3>Автономные системы</h3><p>Разрабатываем роботов и ИИ-ассистентов, способных работать в средах, недоступных человеку.</p></div>
+        <div class="card"><span class="ico">🧠</span><h3>Когнитивные исследования</h3><p>Изучаем механизмы мышления, памяти и адаптации, чтобы расширить возможности человеческого разума.</p></div>
+        <div class="card"><span class="ico">🛰️</span><h3>Аэрокосмические технологии</h3><p>Проектируем компактные двигатели и сенсоры для исследований дальнего космоса.</p></div>
+        <div class="card"><span class="ico">🔬</span><h3>Материаловедение</h3><p>Создаём новые сплавы и покрытия, устойчивые к экстремальным нагрузкам и температурам.</p></div>
+        <div class="card"><span class="ico">🛡️</span><h3>Безопасность протоколов</h3><p>Каждый эксперимент проходит многоуровневую проверку. Безопасность — часть науки, а не её тормоз.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="projects">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="kicker">// 02 — Активные протоколы</div>
+        <h2>Проекты лаборатории</h2>
+        <p>Текущие направления исследований. Данные загружаются из общей базы.</p>
+      </div>
+      <div class="proj" id="homeProjects"><div class="loading">Загрузка…</div></div>
+      <div class="warning">
+        <div class="sym">⚠</div>
+        <div>
+          <h4>Статус тестирования</h4>
+          <p id="warnText">Загрузка данных…</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="wrap">
+      <div class="cta">
+        <h2>Готовы присоединиться к NASP?</h2>
+        <p>Мы ищем инженеров, физиков, программистов и просто любопытных людей.
+           Напишите нам — и начните свой первый протокол.</p>
+        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=NewApertureScienceProject@gmail.com&su=Заявка%20в%20NASP"
+           target="_blank" rel="noopener" class="btn btn-primary">Связаться с лабораторией</a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div id="page-protocols" class="page">
+  <div class="wrap">
+    <div class="proto-hero">
+      <div class="kicker" style="font-size:12px;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:10px">// Архив лаборатории</div>
+      <h1>Все <span>протоколы</span></h1>
+      <p>Полный реестр исследовательских протоколов NASP. Данные общие для всех посетителей.</p>
+      <div class="proto-meta" id="protoMeta"></div>
+    </div>
+    <div class="controls">
+      <input id="search" class="search" type="text" placeholder="Поиск по названию, коду или описанию...">
+      <div class="filters">
+        <button class="fbtn active" data-f="all">Все</button>
+        <button class="fbtn" data-f="design">Проектирование</button>
+        <button class="fbtn" data-f="review">На проверке</button>
+        <button class="fbtn" data-f="work">В работе</button>
+        <button class="fbtn" data-f="closed">Закрыт</button>
+      </div>
+    </div>
+    <div class="count" id="count"></div>
+    <div class="proto-list" id="protoList"><div class="loading">Загрузка…</div></div>
+  </div>
+</div>
+
+<div id="page-admin" class="page">
+  <div id="adminLogin">
+    <div class="wrap">
+      <div class="login-box">
+        <h2>🔐 Вход в админ-панель</h2>
+        <p>Доступ только для авторизованного персонала NASP.</p>
+        <div class="login-err" id="loginErr"></div>
+        <input id="emailInput" type="email" placeholder="Email" autocomplete="username">
+        <input id="passInput" type="password" placeholder="Пароль" autocomplete="current-password">
+        <button class="btn btn-primary" style="width:100%" onclick="tryLogin()">Войти</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="adminPanel" style="display:none">
+    <div class="wrap">
+      <div class="admin-head">
+        <h1>Админ-панель <span>NASP</span></h1>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span id="adminEmail" style="font-size:13px;color:var(--dim);align-self:center"></span>
+          <button class="btn btn-ghost btn-sm" onclick="runDiagnostics()">Диагностика</button>
+          <button class="btn btn-danger btn-sm" onclick="logout()">Выйти</button>
+        </div>
+      </div>
+      <div class="diag-box" id="diagBox"></div>
+      <div class="admin-tabs">
+        <button class="atab active" data-tab="proto">Протоколы</button>
+        <button class="atab" data-tab="tests">Испытания</button>
+      </div>
+
+      <div class="a-section active" id="tab-proto">
+        <div class="panel">
+          <h3>Добавить протокол</h3>
+          <div class="form-grid">
+            <div class="field"><label>Код (необязательно)</label><input id="pCode" placeholder="Оставь пустым — сгенерируется"></div>
+            <div class="field"><label>Название</label><input id="pName" placeholder="Например, Quantum Bridge"></div>
+            <div class="field"><label>Статус</label>
+              <select id="pStatus">
+                <option value="design">Проектирование</option>
+                <option value="review">На проверке</option>
+                <option value="work">В работе</option>
+                <option value="closed">Закрыт</option>
+              </select>
+            </div>
+            <div class="field"><label>Уровень доступа</label>
+              <select id="pLevel">
+                <option>Открытый</option>
+                <option>Внутренний</option>
+                <option>Ограниченный</option>
+              </select>
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:14px"><label>Описание</label><textarea id="pDesc" placeholder="Краткое описание протокола"></textarea></div>
+          <div class="form-actions"><button class="btn btn-primary btn-sm" onclick="addProtocol()">+ Добавить протокол</button></div>
+        </div>
+        <div class="panel">
+          <h3>Все протоколы (<span id="protoCount">0</span>)</h3>
+          <div class="table-scroll">
+            <table class="a-table">
+              <thead><tr><th>Код</th><th>Название</th><th>Статус</th><th>Тестов</th><th>Действия</th></tr></thead>
+              <tbody id="protoTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="a-section" id="tab-tests">
+        <div class="panel">
+          <h3>Добавить испытание</h3>
+          <div class="form-grid">
+            <div class="field"><label>Протокол</label><select id="tProto"></select></div>
+            <div class="field"><label>Название испытания</label><input id="tName" placeholder="Например, Тест стабильности"></div>
+            <div class="field"><label>Результат</label>
+              <select id="tResult">
+                <option value="planned">Запланировано</option>
+                <option value="ok">Успешно</option>
+                <option value="fail">Провалено</option>
+              </select>
+            </div>
+            <div class="field"><label>Дата</label><input id="tDate" type="date"></div>
+          </div>
+          <div class="field" style="margin-bottom:14px"><label>Заметки</label><textarea id="tNotes" placeholder="Дополнительная информация"></textarea></div>
+          <div class="form-actions"><button class="btn btn-primary btn-sm" onclick="addTest()">+ Добавить испытание</button></div>
+        </div>
+        <div class="panel">
+          <h3>Все испытания (<span id="testCount">0</span>)</h3>
+          <div class="table-scroll">
+            <table class="a-table">
+              <thead><tr><th>Протокол</th><th>Испытание</th><th>Результат</th><th>Дата</th><th>Действия</th></tr></thead>
+              <tbody id="testTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap foot">
+    <div class="logo" onclick="showPage('home')"><div class="ring"></div><span>N<b>A</b>SP</span></div>
+    <div>© 2026 New Aperture Science Project. Все протоколы защищены.</div>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ================== НАСТРОЙКИ ================== */
+const SUPABASE_URL = 'https://bojcolgpjlvfaabhshzv.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvamNvbGdwamx2ZmFhYmhzaHp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQxNDYxNjksImV4cCI6MjEwOTcyMjE2OX0.EEEqhi2YzzVT9BPmlH7CBPZpVpKXvdCrJlAI5FXRFkM';
+
+/* ⚠️ ОБЯЗАТЕЛЬНО ЗАМЕНИ на email, который создал в Supabase → Authentication → Users */
+const ADMIN_EMAIL = 'admin@nasp.local';
+
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const STATUS_INFO = {
+  design:{label:"Проектирование", cls:"st-pend"},
+  review:{label:"На проверке", cls:"st-test"},
+  work:{label:"В работе", cls:"st-work"},
+  closed:{label:"Закрыт", cls:"st-class"}
+};
+const RESULT_INFO = {
+  planned:{label:"Запланировано", cls:"st-pend"},
+  ok:{label:"Успешно", cls:"st-active"},
+  fail:{label:"Провалено", cls:"st-class"}
+};
+
+let DATA = { protocols: [], tests: [] };
+let currentFilter = 'all';
+let session = null;
+
+/* ================== НАВИГАЦИЯ ================== */
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.getElementById('menu').classList.remove('open');
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(id==='protocols') renderProtocols();
+  if(id==='admin') renderAdminGate();
+}
+function go(page, anchor){
+  showPage(page);
+  setTimeout(()=>{const el=document.getElementById(anchor); if(el) el.scrollIntoView({behavior:'smooth'});},80);
+}
+
+/* ================== ЗАГРУЗКА ================== */
+async function loadAll(){
+  const [p, t] = await Promise.all([
+    db.from('protocols').select('*').order('id', {ascending:true}),
+    db.from('tests').select('*').order('id', {ascending:true})
+  ]);
+  if(p.error){ toast('Ошибка загрузки протоколов: '+p.error.message, 'err'); console.error(p.error); return; }
+  if(t.error){ toast('Ошибка загрузки испытаний: '+t.error.message, 'err'); console.error(t.error); return; }
+  DATA.protocols = p.data || [];
+  DATA.tests = t.data || [];
+  renderStats();
+  renderHomeProjects();
+  renderProtocols();
+  if(session) renderAdmin();
+}
+
+/* ================== ПУБЛИЧНЫЕ ================== */
+function renderStats(){
+  document.getElementById('stProto').textContent = DATA.protocols.length;
+  document.getElementById('stWork').textContent = DATA.protocols.filter(p=>p.status==='work').length;
+  const total = DATA.tests.length;
+  const ok = DATA.tests.filter(t=>t.result==='ok').length;
+  document.getElementById('stTests').textContent = total;
+  document.getElementById('stOk').textContent = ok;
+  const w = document.getElementById('warnText');
+  if(w) w.innerHTML = total===0
+    ? `На текущий момент проведено <b>0 тестов</b>. Протоколы на стадии проектирования и подготовки.`
+    : `Проведено <b>${total} тестов</b>, успешных — <b>${ok}</b>. Протоколов в работе: <b>${DATA.protocols.filter(p=>p.status==='work').length}</b>.`;
+}
+
+function renderHomeProjects(){
+  const el = document.getElementById('homeProjects');
+  const list = DATA.protocols.slice(0,4);
+  if(!list.length){ el.innerHTML = '<div class="empty">Протоколов пока нет.</div>'; return; }
+  el.innerHTML = list.map(p=>{
+    const si = STATUS_INFO[p.status] || STATUS_INFO.design;
+    const tC = DATA.tests.filter(t=>t.protocol_id===p.id).length;
+    const w = p.status==='work'?60:tC?100:0;
+    return `<div class="card">
+      <div class="top"><span class="code">${esc(p.code||'—')}</span><span class="status ${si.cls}">${si.label}</span></div>
+      <div class="body"><h3>${esc(p.name)}</h3><p>${esc(p.description||'')}</p>
+      <div class="bar"><i style="width:${w}%"></i></div>
+      <div style="font-size:11px;color:var(--dim);margin-top:8px;letter-spacing:.5px;text-transform:uppercase">Тестов: ${tC}</div>
+      </div></div>`;
+  }).join('');
+}
+
+function renderProtocols(){
+  const listEl = document.getElementById('protoList');
+  const countEl = document.getElementById('count');
+  const metaEl = document.getElementById('protoMeta');
+  if(!listEl) return;
+  const total = DATA.protocols.length;
+  const totalT = DATA.tests.length;
+  const okT = DATA.tests.filter(t=>t.result==='ok').length;
+  const wC = DATA.protocols.filter(p=>p.status==='work').length;
+  metaEl.innerHTML = `
+    <span class="tag">Всего: <b>${total}</b></span>
+    <span class="tag">В работе: <b>${wC}</b></span>
+    <span class="tag">Тестов: <b>${totalT}</b></span>
+    <span class="tag">Успешных: <b>${okT}</b></span>`;
+  const q = (document.getElementById('search').value||'').trim().toLowerCase();
+  const filtered = DATA.protocols.filter(p=>{
+    const okF = currentFilter==='all' || p.status===currentFilter;
+    const okQ = !q || ((p.code||'')+' '+p.name+' '+(p.description||'')).toLowerCase().includes(q);
+    return okF && okQ;
+  });
+  countEl.innerHTML = `Показано <b>${filtered.length}</b> из <b>${total}</b> · в работе: <b>${wC}</b> · тестов: <b>${totalT}</b>`;
+  if(!filtered.length){ listEl.innerHTML = `<div class="empty">Ничего не найдено.</div>`; return; }
+  listEl.innerHTML = filtered.map(p=>{
+    const si = STATUS_INFO[p.status] || STATUS_INFO.design;
+    const tC = DATA.tests.filter(t=>t.protocol_id===p.id).length;
+    const okC = DATA.tests.filter(t=>t.protocol_id===p.id && t.result==='ok').length;
+    return `<div class="proto">
+      <div class="row1"><span class="pid">${esc(p.code||'—')}</span><span class="status ${si.cls}">${si.label}</span></div>
+      <h4>${esc(p.name)}</h4>
+      <p>${esc(p.description||'')}</p>
+      <div class="foot"><span>Тестов: ${tC} (успешно ${okC})</span><span class="lvl">${esc(p.level||'')}</span></div>
+    </div>`;
+  }).join('');
+}
+
+document.getElementById('search').addEventListener('input', renderProtocols);
+document.querySelectorAll('.fbtn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.fbtn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    currentFilter = b.dataset.f;
+    renderProtocols();
+  });
+});
+
+/* ================== АДМИН ================== */
+async function renderAdminGate(){
+  const { data } = await db.auth.getSession();
+  session = data.session;
+  if(session && session.user.email === ADMIN_EMAIL){
+    document.getElementById('adminLogin').style.display='none';
+    document.getElementById('adminPanel').style.display='block';
+    document.getElementById('adminEmail').textContent = session.user.email;
+    renderAdmin();
+  } else {
+    document.getElementById('adminLogin').style.display='block';
+    document.getElementById('adminPanel').style.display='none';
+  }
+}
+
+async function requireAuth(){
+  const { data } = await db.auth.getSession();
+  session = data.session;
+  if(!session || session.user.email !== ADMIN_EMAIL){
+    toast('Сначала войдите в админку','err');
+    showPage('admin');
+    return false;
+  }
+  return true;
+}
+
+async function tryLogin(){
+  const email = document.getElementById('emailInput').value.trim();
+  const pass = document.getElementById('passInput').value;
+  const err = document.getElementById('loginErr');
+  err.style.display='none';
+  if(!email || !pass){ err.textContent='Введите email и пароль'; err.style.display='block'; return; }
+  if(email !== ADMIN_EMAIL){
+    err.textContent='Этот аккаунт не является администратором NASP. Проверь ADMIN_EMAIL в коде — он должен совпадать с email в Supabase → Authentication → Users.';
+    err.style.display='block';
+    return;
+  }
+  const { data, error } = await db.auth.signInWithPassword({ email, password: pass });
+  if(error){ err.textContent='Ошибка: '+error.message; err.style.display='block'; return; }
+  session = data.session;
+  console.log('[NASP] Сессия после входа:', session);
+  document.getElementById('passInput').value='';
+  await renderAdminGate();
+  toast('Вход выполнен');
+}
+document.getElementById('passInput').addEventListener('keydown', e=>{ if(e.key==='Enter') tryLogin(); });
+
+async function logout(){
+  await db.auth.signOut();
+  session = null;
+  document.getElementById('adminPanel').style.display='none';
+  document.getElementById('adminLogin').style.display='block';
+  toast('Выход выполнен');
+}
+
+/* ================== ДИАГНОСТИКА ================== */
+async function runDiagnostics(){
+  const box = document.getElementById('diagBox');
+  box.style.display='block';
+  box.textContent = 'Диагностика...\n';
+
+  const lines = [];
+
+  // 1. Локальная сессия
+  const { data: sess } = await db.auth.getSession();
+  lines.push('=== Сессия (локально) ===');
+  if(sess.session){
+    lines.push('user.email: ' + sess.session.user.email);
+    lines.push('user.id:    ' + sess.session.user.id);
+    lines.push('expires_at: ' + new Date(sess.session.expires_at*1000).toISOString());
+    lines.push('access_token: ' + (sess.session.access_token ? sess.session.access_token.slice(0,20)+'...' : 'НЕТ'));
+  } else {
+    lines.push('Сессии НЕТ. Войди заново.');
+  }
+
+  // 2. Кто я по мнению сервера
+  lines.push('\n=== Сервер видит запрос как ===');
+  try {
+    const { data, error } = await db.rpc('debug_request_jwt');
+    if(error) lines.push('RPC error: ' + error.message);
+    else lines.push(JSON.stringify(data));
+  } catch(e){ lines.push('RPC exception: '+e.message); }
+
+  // 3. Пробная вставка
+  lines.push('\n=== Пробная вставка ===');
+  try {
+    const { data, error } = await db.from('protocols')
+      .insert({ code:'TEST-'+Date.now(), name:'__diag__', description:'diag', status:'design', level:'Открытый' })
+      .select();
+    if(error){
+      lines.push('INSERT error: ' + error.message);
+      lines.push('code: ' + error.code);
+      lines.push('details: ' + (error.details||''));
+      lines.push('hint: ' + (error.hint||''));
+    } else {
+      lines.push('INSERT OK. id=' + data[0].id + ' — удаляю...');
+      await db.from('protocols').delete().eq('id', data[0].id);
+      lines.push('Удалено.');
+    }
+  } catch(e){ lines.push('INSERT exception: '+e.message); }
+
+  box.textContent = lines.join('\n');
+  console.log('[NASP Диагностика]\n' + lines.join('\n'));
+}
+
+/* ================== CRUD ================== */
+document.querySelectorAll('.atab').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.atab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.a-section').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById('tab-'+b.dataset.tab).classList.add('active');
+  });
+});
+
+function renderAdmin(){
+  renderProtoTable();
+  renderTestTable();
+  fillProtoSelect();
+}
+
+function renderProtoTable(){
+  const tb = document.getElementById('protoTable');
+  document.getElementById('protoCount').textContent = DATA.protocols.length;
+  if(!DATA.protocols.length){
+    tb.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--dim);padding:30px">Протоколов нет</td></tr>`;
+    return;
+  }
+  tb.innerHTML = DATA.protocols.map(p=>{
+    const tC = DATA.tests.filter(t=>t.protocol_id===p.id).length;
+    return `<tr>
+      <td><span class="code">${esc(p.code||'—')}</span></td>
+      <td><span class="name">${esc(p.name)}</span><br><span style="font-size:12px;color:var(--dim)">${esc((p.description||'').slice(0,70))}</span></td>
+      <td>
+        <select onchange="changeStatus(${p.id}, this.value)">
+          <option value="design" ${p.status==='design'?'selected':''}>Проектирование</option>
+          <option value="review" ${p.status==='review'?'selected':''}>На проверке</option>
+          <option value="work"   ${p.status==='work'?'selected':''}>В работе</option>
+          <option value="closed" ${p.status==='closed'?'selected':''}>Закрыт</option>
+        </select>
+      </td>
+      <td>${tC}</td>
+      <td><div class="acts">
+        <button class="mini-btn" onclick="editProtocol(${p.id})">Изменить</button>
+        <button class="mini-btn del" onclick="deleteProtocol(${p.id})">Удалить</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderTestTable(){
+  const tb = document.getElementById('testTable');
+  document.getElementById('testCount').textContent = DATA.tests.length;
+  if(!DATA.tests.length){
+    tb.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--dim);padding:30px">Испытаний нет</td></tr>`;
+    return;
+  }
+  tb.innerHTML = DATA.tests.map(t=>{
+    const p = DATA.protocols.find(x=>x.id===t.protocol_id);
+    const ri = RESULT_INFO[t.result] || RESULT_INFO.planned;
+    return `<tr>
+      <td><span class="code">${p?esc(p.code||'—'):'—'}</span><br><span style="font-size:12px;color:var(--dim)">${p?esc(p.name):'удалён'}</span></td>
+      <td><span class="name">${esc(t.name)}</span>${t.notes?`<br><span style="font-size:12px;color:var(--dim)">${esc(t.notes)}</span>`:''}</td>
+      <td><span class="status ${ri.cls}">${ri.label}</span></td>
+      <td style="font-size:13px;color:var(--dim)">${t.date||'—'}</td>
+      <td><div class="acts">
+        <button class="mini-btn" onclick="editTest(${t.id})">Изменить</button>
+        <button class="mini-btn del" onclick="deleteTest(${t.id})">Удалить</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function fillProtoSelect(){
+  const sel = document.getElementById('tProto');
+  const cur = sel.value;
+  sel.innerHTML = DATA.protocols.map(p=>`<option value="${p.id}">${esc(p.code||'—')} — ${esc(p.name)}</option>`).join('');
+  if(cur) sel.value = cur;
+}
+
+async function nextProtoCode(){
+  let max = 0;
+  DATA.protocols.forEach(p=>{
+    const m = /NASP-(\d+)/.exec(p.code||'');
+    if(m) max = Math.max(max, +m[1]);
+  });
+  return 'NASP-'+String(max+1).padStart(2,'0');
+}
+
+function explainError(msg){
+  if(/row-level security/i.test(msg)) return 'RLS блокирует запись. Нажми «Диагностика» и пришли результат.';
+  if(/JWT/i.test(msg)) return 'Сессия истекла. Войди заново.';
+  if(/Invalid API key/i.test(msg)) return 'Неверный SUPABASE_KEY.';
+  return msg;
+}
+
+async function addProtocol(){
+  if(!await requireAuth()) return;
+  const name = document.getElementById('pName').value.trim();
+  const desc = document.getElementById('pDesc').value.trim();
+  const status = document.getElementById('pStatus').value;
+  const level = document.getElementById('pLevel').value;
+  let code = document.getElementById('pCode').value.trim();
+  if(!name){ toast('Введите название','err'); return; }
+  if(!code) code = await nextProtoCode();
+  const { error } = await db.from('protocols').insert({ code, name, description: desc||'—', status, level });
+  if(error){ toast('Ошибка: '+explainError(error.message),'err'); console.error(error); return; }
+  document.getElementById('pCode').value='';
+  document.getElementById('pName').value='';
+  document.getElementById('pDesc').value='';
+  await loadAll();
+  toast('Протокол добавлен');
+}
+
+async function changeStatus(id, status){
+  if(!await requireAuth()) return;
+  const { error } = await db.from('protocols').update({status}).eq('id', id);
+  if(error){ toast('Ошибка: '+explainError(error.message),'err'); console.error(error); return; }
+  await loadAll();
+  toast('Статус изменён');
+}
+
+async function editProtocol(id){
+  if(!await requireAuth()) return;
+  const p = DATA.protocols.find(x=>x.id===id);
+  if(!p) return;
+  const name = prompt('Название:', p.name); if(name===null) return;
+  const desc = prompt('Описание:', p.description||''); if(desc===null) return;
+  const level = prompt('Уровень (Открытый / Внутренний / Ограниченный):', p.level||'Открытый'); if(level===null) return;
+  const { error } = await db.from('protocols').update({
+    name: name.trim()||p.name,
+    description: desc.trim()||p.description,
+    level: ['Открытый','Внутренний','Ограниченный'].includes(level.trim())?level.trim():p.level
+  }).eq('id', id);
+  if(error){ toast('Ошибка: '+explainError(error.message),'err'); console.error(error); return; }
+  await loadAll();
+  toast('Протокол обновлён');
+}
+
+async function deleteProtocol(id){
+  if(!await requireAuth()) return;
+  const p = DATA.protocols.find(x=>x.id===id);
+  if(!p) return;
+  if(!confirm(`Удалить ${p.code} — «${p.name}»? Связанные испытания тоже удалятся.`)) return;
+  const { error } = await db.from('protocols').delete().eq('id', id);
+  if(error){ toast('Ошибка: '+explainError(error.message),'err'); console.error(error); return; }
+  await loadAll();
+  toast('Протокол удалён');
+}
+
+async function addTest(){
+  if(!await requireAuth()) return;
+  if(!DATA.protocols.length){ toast('Сначала добавьте протокол','err'); return; }
+  const protocol_id = +document.getElementById('tProto').value;
+  const name = document.getElementById('tName').value.trim();
+  const result = document.getElementById('tResult').value;
+  const date = document.getElementById('tDate').value || null;
+  const notes = document.getElementById('tNotes').value.trim();
+  if(!name){ toast('Введите название испытания','err'); return; }
+  const { error } = await db.from('tests').insert({ protocol_id, name, result, date, notes });
+  if(error){ toast('Ошибка: '+explainError(error.message),'err'); console.error(error); return; }
+  document.getElementById('tName').value='';
+  document.getElementById('tNotes').value='';
+  document.getElementById('tDate').value='';
+  await loadAll();
+  toast('Испытание добавлено');
+}
+
+async function editTest(id){
+  if(!await requireAuth()) return;
+  const t = DATA.tests.find(x=>x.id===id);
+  if(!t) return;
+  const name = prompt('Название:', t.name); if(name===null) return;
+  const result = prompt('Результат (planned / ok / fail):', t.result); if(result===null) return;
+  const date = prompt('Дата (ГГГГ-ММ-ДД):', t.date||''); if(date===null) return;
+  const notes = prompt('Заметки:', t.notes||''); if(notes===null) return;
+  const { error } = await db.from('tests').update({
+    name: name.trim()||t.name,
+    result: ['planned','ok','fail'].includes(result.trim())?result.trim():t.result,
+    date: date.trim()||null,
+    notes: notes.trim()
+  }).eq('id', id);
+  if(error){ toast('Ошибка: '+explainError(error.message),'err'); console.error(error); return; }
+  await loadAll();
+  toast('Испытание обновлено');
+}
+
+async function deleteTest(id){
+  if(!await requireAuth()) return;
+  const t = DATA.tests.find(x=>x.id===id);
+  if(!t) return;
+  if(!confirm(`Удалить испытание «${t.name}»?`)) return;
+  const { error } = await db.from('tests').delete().eq('id', id);
+  if(error){ toast('Ошибка: '+explainError(error.message),'err'); console.error(error); return; }
+  await loadAll();
+  toast('Испытание удалено');
+}
+
+/* ================== УТИЛИТЫ ================== */
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+let toastTimer;
+function toast(msg, type){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (type==='err'?' err':'');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ el.className='toast'; }, 4000);
+}
+
+/* ================== СТАРТ ================== */
+loadAll();
+db.auth.onAuthStateChange(()=>{ renderAdminGate(); });
+</script>
+</body>
+</html>
